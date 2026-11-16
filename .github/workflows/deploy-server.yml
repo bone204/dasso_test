@@ -1,0 +1,29 @@
+name: Deploy Server to Railway
+
+on:
+  push:
+    branches:
+      - deploy
+    paths:
+      - 'server/**'
+      - '.github/workflows/deploy-server.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy-server:
+    name: Deploy NestJS Backend to Railway
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy Server Service
+        run: |
+          cd server
+          railway up --service ${{ secrets.RAILWAY_SERVER_SERVICE_NAME || 'server' }} --detach
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
