@@ -17,13 +17,19 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
-
       - name: Deploy Keycloak Service
         run: |
-          cd keycloak
-          railway up --service ${{ secrets.RAILWAY_KEYCLOAK_SERVICE_NAME || 'keycloak' }} --detach
+          if [ -n "${{ secrets.RAILWAY_TOKEN }}" ]; then
+            echo "Deploying via Railway CLI..."
+            npm install -g @railway/cli
+            cd keycloak
+            railway up --service ${{ secrets.RAILWAY_KEYCLOAK_SERVICE_NAME || 'keycloak' }} --detach
+          elif [ -n "${{ secrets.RAILWAY_KEYCLOAK_DEPLOY_HOOK }}" ]; then
+            echo "Deploying via Railway Webhook Trigger..."
+            curl -X POST "${{ secrets.RAILWAY_KEYCLOAK_DEPLOY_HOOK }}"
+          else
+            echo "Notice: Neither RAILWAY_TOKEN nor RAILWAY_KEYCLOAK_DEPLOY_HOOK configured. Railway Git Auto-Deploy handles deployment automatically."
+          fi
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
