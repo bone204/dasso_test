@@ -25,8 +25,7 @@ jobs:
       - name: Deploy to Vercel
         run: |
           npm install --global vercel@latest
-          cd web
-          # Auto-link project directly by project name or ID using VERCEL_TOKEN (no manual orgId needed)
+          # Link and deploy from repository root so Vercel can find the "web" Root Directory
           vercel link --yes --project dasso-test --token "${{ secrets.VERCEL_TOKEN }}"
           vercel deploy --prod --token "${{ secrets.VERCEL_TOKEN }}"
         env:
