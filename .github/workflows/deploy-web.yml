@@ -22,24 +22,23 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install Dependencies
-        run: |
-          cd web
-          npm ci
-
       - name: Deploy to Vercel
         run: |
           npm install --global vercel@latest
           cd web
-          mkdir -p .vercel
-          cat << 'EOF' > .vercel/project.json
-          {
-            "projectId": "${{ secrets.VERCEL_PROJECT_ID }}",
-            "orgId": "${{ secrets.VERCEL_ORG_ID }}"
-          }
-          EOF
-          vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
+          node -e '
+            const fs = require("fs");
+            const projectId = process.env.VERCEL_PROJECT_ID;
+            const orgId = process.env.VERCEL_ORG_ID;
+            fs.mkdirSync(".vercel", { recursive: true });
+            const config = { projectId };
+            if (orgId && orgId.trim()) config.orgId = orgId.trim();
+            fs.writeFileSync(".vercel/project.json", JSON.stringify(config, null, 2));
+            console.log("Configured .vercel/project.json for project:", projectId);
+          '
+          vercel deploy --prod --token="${{ secrets.VERCEL_TOKEN }}" --yes
         env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
 
