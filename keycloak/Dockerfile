@@ -10,8 +10,8 @@ RUN /opt/keycloak/bin/kc.sh build
 FROM quay.io/keycloak/keycloak:26.0
 COPY --from=builder /opt/keycloak/ /opt/keycloak/
 
-# Optimize JVM memory for lightweight cloud containers
-ENV JAVA_OPTS_APPEND="-XX:+UseSerialGC -XX:MaxRAMPercentage=75 -Xms128m -Xmx400m"
+# Optimize JVM memory for lightweight cloud containers (avoid duplicate GC flag)
+ENV JAVA_OPTS_APPEND="-Xms128m -Xmx384m -XX:MaxRAMPercentage=75"
 
 ENTRYPOINT ["/opt/keycloak/bin/kc.sh"]
 CMD ["start", "--optimized", "--http-enabled=true"]
